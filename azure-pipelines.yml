@@ -20,7 +20,7 @@ stages:
       inputs:
         command: 'build'
         containerRegistry: 'openshift-registry'
-        buildContext: '$(Build.SourcesDirectory)/Tailspin.SpaceGame.Web)'
+        buildContext: '$(Build.SourcesDirectory)/Tailspin.SpaceGame.Web'
         repository: '$(project-name-dev)/$(image-name)'
         Dockerfile: '$(Build.SourcesDirectory)/Tailspin.SpaceGame.Web/Dockerfile'
         tags: $(Build.BuildId)
