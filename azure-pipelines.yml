@@ -7,6 +7,7 @@ pool:
 variables:
   project-name-dev: 'ado-openshift'
   image-name: 'ado-dotnet-web'
+  ldrboard-image-name: 'ado-dotnet-ldrboard'
 
 stages:
 - stage: Build
@@ -16,7 +17,7 @@ stages:
     displayName: Build and Push Job
     steps:
     - task: Docker@2.240.2
-      displayName: 'Build Docker image'
+      displayName: 'Build Docker image - dotnet web'
       inputs:
         command: 'build'
         containerRegistry: 'openshift-registry'
@@ -25,11 +26,27 @@ stages:
         Dockerfile: '$(Build.SourcesDirectory)/Tailspin.SpaceGame.Web/Dockerfile'
         tags: $(Build.BuildId)
     - task: Docker@2.240.2
-      displayName: 'Push Docker image to OpenShift internal registry'
+      displayName: 'Push Docker image - web, to OpenShift internal registry'
       inputs:
         command: 'push'
         containerRegistry: 'openshift-registry'
         repository: '$(project-name-dev)/$(image-name)'
+        tags: $(Build.BuildId)
+    - task: Docker@2.240.2
+      displayName: 'Build Docker image - dotnet leaderboard'
+      inputs:
+        command: 'build'
+        containerRegistry: 'openshift-registry'
+        buildContext: $(Build.Repository.LocalPath)
+        repository: '$(project-name-dev)/$(ldrboard-image-name)'
+        Dockerfile: '$(Build.SourcesDirectory)/Tailspin.SpaceGame.LeaderBoardContainer/Dockerfile'
+        tags: $(Build.BuildId)
+    - task: Docker@2.240.2
+      displayName: 'Push Docker image - lederboard,  to OpenShift internal registry'
+      inputs:
+        command: 'push'
+        containerRegistry: 'openshift-registry'
+        repository: '$(project-name-dev)/$(ldrboard-image-name)'
         tags: $(Build.BuildId)
     - task: PublishPipelineArtifact@1
       displayName: Publish pipeline artifacts
@@ -37,6 +54,23 @@ stages:
         targetPath: '$(Build.SourcesDirectory)/manifests'
         artifact: 'manifests'
         publishLocation: 'pipeline'
+- stage: DeployLB
+  displayName: Deploy to DEV,leaderboard
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: DeployLeaderBoardDevJob
+    displayName: Deploy LeaderBoard to DEV Job
+    steps:
+    - task: KubernetesManifest@0
+      displayName: Deploy to Kubernetes cluster
+      inputs:
+        action: deploy
+        kubernetesServiceConnection: 'openshift'
+        namespace: '$(project-name-dev)'
+        manifests: |
+          $(Build.SourcesDirectory)/manifests/leaderboard-deploy.yml
+        containers: 'image-registry.openshift-image-registry.svc:5000/$(project-name-dev)/$(ldrboard-image-name):$(Build.BuildId)'
 
 - stage: Deploy
   displayName: Deploy to DEV
@@ -53,5 +87,6 @@ stages:
         kubernetesServiceConnection: 'openshift'
         namespace: '$(project-name-dev)'
         manifests: |
-          $(Build.SourcesDirectory)/manifests/*.yml
+          $(Build.SourcesDirectory)/manifests/deployment.yml
+          $(Build.SourcesDirectory)/manifests/service.yml
         containers: 'image-registry.openshift-image-registry.svc:5000/$(project-name-dev)/$(image-name):$(Build.BuildId)'
