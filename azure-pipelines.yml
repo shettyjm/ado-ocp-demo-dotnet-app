@@ -6,7 +6,7 @@ pool:
 
 variables:
   project-name-dev: 'ado-openshift'
-  image-name: 'ado-dotnet-webapp2'
+  image-name: 'ado-dotnet-web'
 
 stages:
 - stage: Build
