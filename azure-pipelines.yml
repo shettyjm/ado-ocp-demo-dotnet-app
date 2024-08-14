@@ -53,5 +53,5 @@ stages:
         kubernetesServiceConnection: 'openshift'
         namespace: '$(project-name-dev)'
         manifests: |
-          $(Build.SourcesDirectory)/manifests/*.yaml
+          $(Build.SourcesDirectory)/manifests/*.yml
         containers: 'image-registry.openshift-image-registry.svc:5000/$(project-name-dev)/$(image-name):$(Build.BuildId)'
