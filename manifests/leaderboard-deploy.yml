@@ -1,1 +1,20 @@
 
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: leaderboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: leaderboard
+  template:
+    metadata:
+      labels:
+        app: leaderboard
+    spec:
+      containers:
+        - name: leaderboard
+          image: image-registry.openshift-image-registry.svc:5000/ado-openshift/leaderboard
+          ports:
+          - containerPort: 80
