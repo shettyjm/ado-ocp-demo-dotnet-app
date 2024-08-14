@@ -39,7 +39,7 @@ stages:
         containerRegistry: 'openshift-registry'
         buildContext: $(Build.Repository.LocalPath)
         repository: '$(project-name-dev)/$(ldrboard-image-name)'
-        Dockerfile: '$(Build.SourcesDirectory)/Tailspin.SpaceGame.LeaderBoardContainer/Dockerfile'
+        Dockerfile: '$(Build.SourcesDirectory)/Tailspin.SpaceGame.LeaderboardContainer/Dockerfile'
         tags: $(Build.BuildId)
     - task: Docker@2.240.2
       displayName: 'Push Docker image - lederboard,  to OpenShift internal registry'
